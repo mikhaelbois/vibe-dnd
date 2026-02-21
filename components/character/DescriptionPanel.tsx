@@ -58,15 +58,15 @@ function EmptyState({ message }: { message: string }) {
   return <p className="text-sm text-slate-500 p-4">{message}</p>
 }
 
-const API = 'https://api.open5e.com/v1'
+const API = 'https://api.open5e.com/v2'
 
 export function DescriptionPanel({ draft }: DescriptionPanelProps) {
-  const race = useOpen5eData<Race>(draft.race ? `${API}/races/${draft.race}/` : null)
+  const race = useOpen5eData<Race>(draft.race ? `${API}/species/${draft.race}/` : null)
   const cls = useOpen5eData<Class>(draft.class ? `${API}/classes/${draft.class}/` : null)
-  const subclass = useOpen5eData<Subclass>(draft.subclass ? `${API}/subclasses/${draft.subclass}/` : null)
+  const subclass = useOpen5eData<Subclass>(draft.subclass ? `${API}/classes/${draft.subclass}/` : null)
   const background = useOpen5eData<Background>(draft.background ? `${API}/backgrounds/${draft.background}/` : null)
   const spells = useOpen5eData<{ results: Spell[] }>(
-    draft.class ? `${API}/spells/?limit=200&dnd_class=${draft.class}` : null
+    draft.class ? `${API}/spells/?limit=200&classes__key=${draft.class}` : null
   )
 
   return (
@@ -89,10 +89,9 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
               <>
                 <h2 className="text-lg font-bold mb-3">{race.data.name}</h2>
                 <DescSection label="Description" value={race.data.desc} />
-                <DescSection label="Age" value={race.data.age} />
-                <DescSection label="Size" value={race.data.size} />
-                <DescSection label="Languages" value={race.data.languages} />
-                <DescSection label="Traits" value={race.data.traits} />
+                {race.data.traits?.map((t) => (
+                  <DescSection key={t.name} label={t.name} value={t.desc} />
+                ))}
               </>
             )}
           </TabsContent>
@@ -105,11 +104,11 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
               <>
                 <h2 className="text-lg font-bold mb-3">{cls.data.name}</h2>
                 <DescSection label="Description" value={cls.data.desc} />
-                <DescSection label="Hit Die" value={`d${cls.data.hit_die}`} />
-                <DescSection label="Saving Throws" value={cls.data.prof_saving_throws} />
-                <DescSection label="Armor Proficiencies" value={cls.data.prof_armor} />
-                <DescSection label="Weapon Proficiencies" value={cls.data.prof_weapons} />
-                <DescSection label="Spellcasting Ability" value={cls.data.spellcasting_ability} />
+                <DescSection label="Hit Die" value={cls.data.hit_dice} />
+                <DescSection
+                  label="Saving Throws"
+                  value={cls.data.saving_throws?.map((s) => s.name).join(', ')}
+                />
               </>
             )}
           </TabsContent>
@@ -134,11 +133,9 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
               <>
                 <h2 className="text-lg font-bold mb-3">{background.data.name}</h2>
                 <DescSection label="Description" value={background.data.desc} />
-                <DescSection label="Skill Proficiencies" value={background.data.skill_proficiencies} />
-                <DescSection label="Tool Proficiencies" value={background.data.tool_proficiencies} />
-                <DescSection label="Equipment" value={background.data.equipment} />
-                <DescSection label="Feature" value={background.data.feature} />
-                <DescSection label="" value={background.data.feature_desc} />
+                {background.data.benefits?.map((b) => (
+                  <DescSection key={b.name} label={b.name} value={b.desc} />
+                ))}
               </>
             )}
           </TabsContent>
@@ -151,15 +148,15 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
               <div className="space-y-4">
                 <p className="text-sm text-slate-400">{spells.data.results.length} spells</p>
                 {spells.data.results.map((spell) => (
-                  <div key={spell.slug} className="border-b border-slate-800 pb-3">
+                  <div key={spell.key} className="border-b border-slate-800 pb-3">
                     <div className="flex items-baseline justify-between mb-1">
                       <h3 className="font-semibold text-slate-200">{spell.name}</h3>
                       <span className="text-xs text-slate-500">
-                        {spell.level === '0' ? 'Cantrip' : `Level ${spell.level_int}`} · {spell.school}
+                        {spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`} · {spell.school.name}
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 mb-1">
-                      {spell.casting_time} · {spell.range} · {spell.duration}
+                      {spell.casting_time} · {spell.range_text} · {spell.duration}
                       {spell.concentration ? ' · Concentration' : ''}
                     </p>
                     <p className="text-sm text-slate-400 line-clamp-3">{spell.desc}</p>

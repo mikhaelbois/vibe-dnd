@@ -1,4 +1,4 @@
-const BASE_URL = 'https://api.open5e.com/v1'
+const BASE_URL = 'https://api.open5e.com/v2'
 
 async function open5eFetch<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -13,95 +13,84 @@ interface Open5eList<T> {
 }
 
 export interface Race {
-  slug: string
+  key: string
   name: string
   desc: string
-  asi_desc?: string
-  age?: string
-  size?: string
-  speed?: Record<string, number>
-  languages?: string
-  vision?: string
-  traits?: string
+  is_subspecies: boolean
+  subspecies_of?: string | null
+  traits?: Array<{ name: string; desc: string; type?: string | null }>
 }
 
 export interface Class {
-  slug: string
+  key: string
   name: string
   desc: string
-  hit_die: number
-  prof_armor?: string
-  prof_weapons?: string
-  prof_tools?: string
-  prof_saving_throws?: string
-  prof_skills?: string
-  spellcasting_ability?: string
+  hit_dice: string
+  saving_throws?: Array<{ name: string; url: string }>
+  subclass_of?: { name: string; key: string; url: string } | null
 }
 
 export interface Subclass {
-  slug: string
+  key: string
   name: string
   desc: string
-  class: { slug: string; name: string }
+  subclass_of: { name: string; key: string; url: string }
 }
 
 export interface Background {
-  slug: string
+  key: string
   name: string
   desc: string
-  skill_proficiencies?: string
-  tool_proficiencies?: string
-  languages?: string
-  equipment?: string
-  feature?: string
-  feature_desc?: string
+  benefits?: Array<{ name: string; desc: string; type: string }>
 }
 
 export interface Spell {
-  slug: string
+  key: string
   name: string
   desc: string
   higher_level?: string
-  range: string
-  components: string
-  material?: string
+  range_text: string
+  verbal: boolean
+  somatic: boolean
+  material: boolean
   ritual: boolean
   duration: string
   concentration: boolean
   casting_time: string
-  level: string
-  level_int: number
-  school: string
-  dnd_class: string
+  level: number
+  school: { name: string; key: string }
+  classes: Array<{ name: string; key: string; url: string }>
 }
 
 export async function getRaces(): Promise<Race[]> {
-  const data = await open5eFetch<Open5eList<Race>>('/races/?limit=100')
-  return data.results
+  const data = await open5eFetch<Open5eList<Race>>('/species/?limit=100')
+  return data.results.filter((r) => !r.is_subspecies)
 }
 
-export async function getRace(slug: string): Promise<Race> {
-  return open5eFetch<Race>(`/races/${slug}/`)
+export async function getRace(key: string): Promise<Race> {
+  return open5eFetch<Race>(`/species/${key}/`)
 }
 
 export async function getClasses(): Promise<Class[]> {
-  const data = await open5eFetch<Open5eList<Class>>('/classes/?limit=100')
-  return data.results
+  const data = await open5eFetch<Open5eList<Class>>('/classes/?limit=200')
+  return data.results.filter((c) => !c.subclass_of)
 }
 
-export async function getClass(slug: string): Promise<Class> {
-  return open5eFetch<Class>(`/classes/${slug}/`)
+export async function getClass(key: string): Promise<Class> {
+  return open5eFetch<Class>(`/classes/${key}/`)
 }
 
-export async function getSubclassesByClass(classSlug: string): Promise<Subclass[]> {
-  const data = await open5eFetch<Open5eList<Subclass>>(
-    `/subclasses/?limit=100&class=${classSlug}`
+export async function getSubclassesByClass(classKey: string): Promise<Subclass[]> {
+  const data = await open5eFetch<Open5eList<Class & { subclass_of?: { key: string } | null }>>(
+    '/classes/?limit=200'
   )
-  return data.results
+  return data.results.filter(
+    (c): c is Subclass & Class => !!c.subclass_of && c.subclass_of.key === classKey
+  ) as unknown as Subclass[]
 }
 
-export async function getSubclass(slug: string): Promise<Subclass> {
-  return open5eFetch<Subclass>(`/subclasses/${slug}/`)
+export async function getSubclass(key: string): Promise<Subclass> {
+  return open5eFetch<Subclass>(`/classes/${key}/`)
 }
 
 export async function getBackgrounds(): Promise<Background[]> {
@@ -109,14 +98,14 @@ export async function getBackgrounds(): Promise<Background[]> {
   return data.results
 }
 
-export async function getBackground(slug: string): Promise<Background> {
-  return open5eFetch<Background>(`/backgrounds/${slug}/`)
+export async function getBackground(key: string): Promise<Background> {
+  return open5eFetch<Background>(`/backgrounds/${key}/`)
 }
 
-export async function getSpellsByClass(classSlug: string, levelInt?: number): Promise<Spell[]> {
-  const levelFilter = levelInt !== undefined ? `&level_int=${levelInt}` : ''
+export async function getSpellsByClass(classKey: string, level?: number): Promise<Spell[]> {
+  const levelFilter = level !== undefined ? `&level=${level}` : ''
   const data = await open5eFetch<Open5eList<Spell>>(
-    `/spells/?limit=200&dnd_class=${classSlug}${levelFilter}`
+    `/spells/?limit=200&classes__key=${classKey}${levelFilter}`
   )
   return data.results
 }

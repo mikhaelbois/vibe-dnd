@@ -88,7 +88,7 @@ export function OptionsPanel({
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
             {races.map((r) => (
-              <SelectItem key={r.slug} value={r.slug}>{r.name}</SelectItem>
+              <SelectItem key={r.key} value={r.key}>{r.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -102,7 +102,7 @@ export function OptionsPanel({
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
             {classes.map((c) => (
-              <SelectItem key={c.slug} value={c.slug}>{c.name}</SelectItem>
+              <SelectItem key={c.key} value={c.key}>{c.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -120,7 +120,7 @@ export function OptionsPanel({
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
             {subclasses.map((s) => (
-              <SelectItem key={s.slug} value={s.slug}>{s.name}</SelectItem>
+              <SelectItem key={s.key} value={s.key}>{s.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -134,7 +134,7 @@ export function OptionsPanel({
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
             {backgrounds.map((b) => (
-              <SelectItem key={b.slug} value={b.slug}>{b.name}</SelectItem>
+              <SelectItem key={b.key} value={b.key}>{b.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>

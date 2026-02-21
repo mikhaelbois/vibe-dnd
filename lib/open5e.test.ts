@@ -9,20 +9,21 @@ beforeEach(() => {
 })
 
 describe('getRaces', () => {
-  it('returns a list of races with slug and name', async () => {
+  it('returns non-subspecies with key and name', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         results: [
-          { slug: 'elf', name: 'Elf', desc: 'An elf.' },
-          { slug: 'human', name: 'Human', desc: 'A human.' },
+          { key: 'srd_elf', name: 'Elf', desc: 'An elf.', is_subspecies: false },
+          { key: 'srd_human', name: 'Human', desc: 'A human.', is_subspecies: false },
+          { key: 'open5e_high-elf', name: 'High Elf', desc: 'A high elf.', is_subspecies: true },
         ],
       }),
     })
 
     const races = await getRaces()
     expect(races).toHaveLength(2)
-    expect(races[0]).toMatchObject({ slug: 'elf', name: 'Elf' })
+    expect(races[0]).toMatchObject({ key: 'srd_elf', name: 'Elf' })
   })
 
   it('throws when the API returns a non-ok response', async () => {
@@ -32,19 +33,21 @@ describe('getRaces', () => {
 })
 
 describe('getSubclassesByClass', () => {
-  it('filters subclasses by class slug', async () => {
+  it('filters subclasses by parent class key', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         results: [
-          { slug: 'school-of-evocation', name: 'School of Evocation', desc: '...', class: { slug: 'wizard' } },
-          { slug: 'school-of-illusion', name: 'School of Illusion', desc: '...', class: { slug: 'wizard' } },
+          { key: 'srd_wizard', name: 'Wizard', desc: '...', subclass_of: null },
+          { key: 'open5e_evocation', name: 'School of Evocation', desc: '...', subclass_of: { key: 'srd_wizard', name: 'Wizard', url: '' } },
+          { key: 'open5e_illusion', name: 'School of Illusion', desc: '...', subclass_of: { key: 'srd_wizard', name: 'Wizard', url: '' } },
+          { key: 'open5e_berserker', name: 'Berserker', desc: '...', subclass_of: { key: 'srd_barbarian', name: 'Barbarian', url: '' } },
         ],
       }),
     })
 
-    const subclasses = await getSubclassesByClass('wizard')
+    const subclasses = await getSubclassesByClass('srd_wizard')
     expect(subclasses).toHaveLength(2)
-    expect(subclasses[0].slug).toBe('school-of-evocation')
+    expect(subclasses[0].key).toBe('open5e_evocation')
   })
 })
