@@ -1,0 +1,68 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Node.js
+
+Node 24 is required (pinned in `.nvmrc`). Use `npm` directly — do not prepend `nvm use` or `source nvm` to commands.
+
+## Commands
+
+```bash
+npm run dev        # start dev server (Turbopack)
+npm run build      # production build
+npm run lint       # ESLint
+npm test           # Vitest (watch mode)
+npm run test:run   # Vitest (single run)
+```
+
+Run a single test file:
+```bash
+npx vitest run lib/open5e.test.ts
+```
+
+## Architecture
+
+### Data flow: server → client split
+
+Builder pages follow a strict two-file pattern:
+
+- **`page.tsx`** — async server component; fetches Open5e data (with `next: { revalidate: 86400 }`), passes it as props to the client component
+- **`client.tsx`** — `'use client'` component; owns all interactive state
+
+Example: `app/characters/new/page.tsx` → `NewCharacterClient`.
+
+### Subclasses are fetched client-side
+
+Subclasses are **not** fetched at page render time. `components/character/OptionsPanel.tsx` fetches them on demand from `/api/subclasses?class=<slug>` (implemented in `app/api/subclasses/route.ts`) to avoid passing all subclasses server-side.
+
+### Server actions
+
+Mutations live in co-located `actions.ts` files (marked `'use server'`). They create a Supabase server client, validate the session, write to the DB, then call `redirect()` on success.
+
+### Auth / middleware
+
+`proxy.ts` (Next.js's `middleware.ts` equivalent) uses `supabase.auth.getClaims()` for local JWT validation (no network round-trip). It protects `/characters/*` and redirects authenticated users away from `/auth/*`.
+
+Auth routes live at `app/auth/login/` and `app/auth/signup/` — the segment is `auth`, not `(auth)`.
+
+### Supabase helpers
+
+- `lib/supabase/server.ts` — server-side client (for server components and actions)
+- `lib/supabase/client.ts` — browser-side client
+
+### Open5e API wrapper (`lib/open5e.ts`)
+
+Typed fetch helpers for the Open5e v2 REST API. All calls use Next.js fetch caching (`revalidate: 86400`). `getRaces()` filters out subspecies and `getClasses()` filters out subclasses in the wrapper (the API has no server-side filter for these).
+
+### Types
+
+`lib/types.ts` defines `Character` (DB shape) and `CharacterDraft` (builder form shape, no `id`/`user_id`).
+
+### UI components
+
+`components/ui/` — shadcn/ui components (slate theme, Tailwind v4). `components/character/` — domain-specific panels (`OptionsPanel`, `DescriptionPanel`).
+
+### ESLint
+
+Type-aware rules (`no-floating-promises`, `no-misused-promises`, `await-thenable`, `consistent-type-imports`) are scoped to `**/*.ts`, `**/*.tsx`, `**/*.mts` only, so `eslint.config.mjs` itself is excluded from `tsconfig.json` parsing.
