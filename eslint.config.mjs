@@ -13,9 +13,10 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
-  // Type-aware rules — require parserOptions.project so TypeScript's type
-  // checker is available to the linter.
+  // Type-aware rules — scoped to TS files so the linter doesn't try to
+  // type-check JS config files (eslint.config.mjs) that aren't in tsconfig.json.
   {
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts"],
     languageOptions: {
       parserOptions: {
         project: true,
