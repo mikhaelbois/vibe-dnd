@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import useSWR from 'swr'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -43,21 +44,9 @@ export function OptionsPanel({
     background: initialDraft?.background ?? '',
     level: initialDraft?.level ?? 1,
   })
-  const [subclasses, setSubclasses] = useState<Subclass[]>([])
-  const [loadingSubclasses, setLoadingSubclasses] = useState(false)
-
-  // Fetch subclasses when class changes
-  useEffect(() => {
-    if (!draft.class) {
-      setSubclasses([])
-      return
-    }
-    setLoadingSubclasses(true)
-    void fetch(`/api/subclasses?class=${draft.class}`)
-      .then((r) => r.json())
-      .then((data: unknown) => setSubclasses(data as typeof subclasses))
-      .finally(() => setLoadingSubclasses(false))
-  }, [draft.class])
+  const { data: subclasses = [], isLoading: loadingSubclasses } = useSWR<Subclass[]>(
+    draft.class ? `/api/subclasses?class=${draft.class}` : null
+  )
 
   function update(field: keyof CharacterDraft, value: string | number) {
     const next = { ...draft, [field]: value }
