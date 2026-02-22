@@ -11,6 +11,7 @@ Node 24 is required (pinned in `.nvmrc`). Use `yarn` directly — do not prepend
 ```bash
 yarn dev        # start dev server (Turbopack)
 yarn build      # production build
+yarn check      # TypeScript type-check (tsc --noEmit)
 yarn lint       # ESLint
 yarn test       # Vitest (watch mode)
 yarn test:run   # Vitest (single run)
