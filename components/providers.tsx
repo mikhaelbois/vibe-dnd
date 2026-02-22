@@ -1,0 +1,13 @@
+'use client'
+
+import { SWRConfig } from 'swr'
+
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error(`Fetch error: ${r.status}`)
+    return r.json()
+  })
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <SWRConfig value={{ fetcher }}>{children}</SWRConfig>
+}
