@@ -1,37 +1,28 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import antfu from '@antfu/eslint-config'
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-    // Local editor history
-    ".history/**",
-  ]),
-  // Type-aware rules — scoped to TS files so the linter doesn't try to
-  // type-check JS config files (eslint.config.mjs) that aren't in tsconfig.json.
-  {
-    files: ["**/*.ts", "**/*.tsx", "**/*.mts"],
-    languageOptions: {
-      parserOptions: {
-        project: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-    rules: {
-      "@typescript-eslint/no-floating-promises": "error",
-      "@typescript-eslint/no-misused-promises": "error",
-      "@typescript-eslint/await-thenable": "error",
-      "@typescript-eslint/consistent-type-imports": "error",
-    },
+export default antfu({
+  react: true,
+  nextjs: true,
+  typescript: {
+    tsconfigPath: './tsconfig.json',
   },
-]);
-
-export default eslintConfig;
+  stylistic: {
+    quotes: 'single',
+    semi: false,
+  },
+  ignores: [
+    '.next/**',
+    'out/**',
+    'build/**',
+    'next-env.d.ts',
+    '.history/**',
+    'docs/**',
+  ],
+}, {
+  rules: {
+    // Next.js uses process.env as a standard pattern on both server and client
+    'node/prefer-global/process': 'off',
+    // Too strict for idiomatic React/Next.js patterns (e.g. `if (!character)`)
+    'ts/strict-boolean-expressions': 'off',
+  },
+})

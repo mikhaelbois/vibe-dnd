@@ -1,6 +1,6 @@
+import Link from 'next/link'
 import { logout } from '@/app/auth/actions'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 
 export default function CharactersLayout({ children }: { children: React.ReactNode }) {
   return (

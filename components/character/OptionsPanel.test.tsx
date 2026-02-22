@@ -1,11 +1,11 @@
+import type { Background, Class, Race } from '@/lib/open5e'
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-
-vi.mock('swr', () => ({ default: vi.fn() }))
 import useSWR from 'swr'
 
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { OptionsPanel } from './OptionsPanel'
-import type { Race, Class, Background } from '@/lib/open5e'
+
+vi.mock('swr', () => ({ default: vi.fn() }))
 
 const mockUseSWR = vi.mocked(useSWR)
 
@@ -25,7 +25,7 @@ beforeEach(() => {
   mockUseSWR.mockReturnValue({ data: undefined, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
 })
 
-describe('OptionsPanel', () => {
+describe('optionsPanel', () => {
   it('calls useSWR with null when no class is selected', () => {
     render(<OptionsPanel {...defaultProps} />)
     expect(mockUseSWR).toHaveBeenCalledWith(null)

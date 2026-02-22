@@ -1,12 +1,12 @@
 'use client'
 
+import type { Background, Class, Race } from '@/lib/open5e'
+import type { Character, CharacterDraft } from '@/lib/types'
 import { useState } from 'react'
-import { OptionsPanel } from '@/components/character/OptionsPanel'
-import { DescriptionPanel } from '@/components/character/DescriptionPanel'
-import { updateCharacter } from './actions'
 import { toast } from 'sonner'
-import type { CharacterDraft, Character } from '@/lib/types'
-import type { Race, Class, Background } from '@/lib/open5e'
+import { DescriptionPanel } from '@/components/character/DescriptionPanel'
+import { OptionsPanel } from '@/components/character/OptionsPanel'
+import { updateCharacter } from './actions'
 
 interface CharacterClientProps {
   character: Character
@@ -31,7 +31,8 @@ export function CharacterClient({ character, races, classes, backgrounds }: Char
     const result = await updateCharacter(character.id, d)
     if (result?.error) {
       toast.error(result.error)
-    } else {
+    }
+    else {
       toast.success('Character saved.')
     }
     setSaving(false)

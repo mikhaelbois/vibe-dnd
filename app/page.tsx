@@ -1,13 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (user) redirect('/characters')
+  if (user)
+    redirect('/characters')
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-6 p-8">

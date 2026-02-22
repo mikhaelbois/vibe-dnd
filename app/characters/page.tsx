@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
+import type { Character } from '@/lib/types'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/server'
 import { deleteCharacter } from './actions'
-import Link from 'next/link'
-import type { Character } from '@/lib/types'
 
 export default async function CharactersPage() {
   const supabase = await createClient()
@@ -23,13 +23,14 @@ export default async function CharactersPage() {
 
       {characters?.length === 0 && (
         <p className="text-slate-400 text-center py-12">
-          No characters yet.{' '}
+          No characters yet.
+          {' '}
           <Link href="/characters/new" className="underline text-slate-200">Create one.</Link>
         </p>
       )}
 
       <div className="grid gap-3">
-        {(characters as Character[])?.map((c) => (
+        {(characters as Character[])?.map(c => (
           <Card key={c.id} className="bg-slate-900 border-slate-800">
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between">
@@ -47,7 +48,15 @@ export default async function CharactersPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-slate-400 capitalize">
-                Level {c.level} {c.class ?? '—'} · {c.race ?? '—'}
+                Level
+                {' '}
+                {c.level}
+                {' '}
+                {c.class ?? '—'}
+                {' '}
+                ·
+                {' '}
+                {c.race ?? '—'}
               </p>
             </CardContent>
           </Card>

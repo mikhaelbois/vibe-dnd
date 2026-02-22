@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
-import { getRaces, getClasses, getBackgrounds } from '@/lib/open5e'
-import { notFound } from 'next/navigation'
-import { CharacterClient } from './client'
 import type { Character } from '@/lib/types'
+import { notFound } from 'next/navigation'
+import { getBackgrounds, getClasses, getRaces } from '@/lib/open5e'
+import { createClient } from '@/lib/supabase/server'
+import { CharacterClient } from './client'
 
 export default async function CharacterPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -14,17 +14,18 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
     getBackgrounds(),
   ])
 
-  const { data: character } = await supabase
+  const { data: character } = (await supabase
     .from('characters')
     .select('*')
     .eq('id', id)
-    .single()
+    .single()) as { data: Character | null, error: unknown }
 
-  if (!character) notFound()
+  if (!character)
+    notFound()
 
   return (
     <CharacterClient
-      character={character as Character}
+      character={character}
       races={races}
       classes={classes}
       backgrounds={backgrounds}

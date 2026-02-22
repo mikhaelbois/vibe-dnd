@@ -1,13 +1,14 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import type { CharacterDraft } from '@/lib/types'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 
 export async function saveNewCharacter(draft: CharacterDraft) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user)
+    return { error: 'Not authenticated' }
 
   const { data, error } = await supabase
     .from('characters')
@@ -23,6 +24,7 @@ export async function saveNewCharacter(draft: CharacterDraft) {
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error)
+    return { error: error.message }
   redirect(`/characters/${data.id}`)
 }

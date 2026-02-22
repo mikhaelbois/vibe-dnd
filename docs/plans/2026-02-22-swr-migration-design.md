@@ -20,11 +20,13 @@ A `'use client'` component that wraps children with `<SWRConfig>`:
 'use client'
 import { SWRConfig } from 'swr'
 
-const fetcher = (url: string) =>
-  fetch(url).then((r) => {
-    if (!r.ok) throw new Error()
+function fetcher(url: string) {
+  return fetch(url).then((r) => {
+    if (!r.ok)
+      throw new Error()
     return r.json()
   })
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return <SWRConfig value={{ fetcher }}>{children}</SWRConfig>

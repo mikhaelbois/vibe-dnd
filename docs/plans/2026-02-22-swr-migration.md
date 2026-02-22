@@ -50,11 +50,13 @@ git commit -m "chore: add swr dependency"
 
 import { SWRConfig } from 'swr'
 
-const fetcher = (url: string) =>
-  fetch(url).then((r) => {
-    if (!r.ok) throw new Error(`Fetch error: ${r.status}`)
+function fetcher(url: string) {
+  return fetch(url).then((r) => {
+    if (!r.ok)
+      throw new Error(`Fetch error: ${r.status}`)
     return r.json()
   })
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return <SWRConfig value={{ fetcher }}>{children}</SWRConfig>
@@ -129,12 +131,12 @@ Create `components/character/DescriptionPanel.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-
-vi.mock('swr', () => ({ default: vi.fn() }))
 import useSWR from 'swr'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DescriptionPanel } from './DescriptionPanel'
+
+vi.mock('swr', () => ({ default: vi.fn() }))
 
 const mockUseSWR = vi.mocked(useSWR)
 
@@ -191,18 +193,19 @@ Replace the entire `components/character/DescriptionPanel.tsx` content:
 ```tsx
 'use client'
 
-import useSWR from 'swr'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Skeleton } from '@/components/ui/skeleton'
-import type { Race, Class, Subclass, Background, Spell } from '@/lib/open5e'
+import type { Background, Class, Race, Spell, Subclass } from '@/lib/open5e'
 import type { CharacterDraft } from '@/lib/types'
+import useSWR from 'swr'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface DescriptionPanelProps {
   draft: CharacterDraft
 }
 
-function DescSection({ label, value }: { label: string; value?: string }) {
-  if (!value) return null
+function DescSection({ label, value }: { label: string, value?: string }) {
+  if (!value)
+    return null
   return (
     <div className="mb-4">
       <h3 className="text-sm font-semibold text-slate-300 mb-1">{label}</h3>
@@ -261,7 +264,7 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
               <>
                 <h2 className="text-lg font-bold mb-3">{race.data.name}</h2>
                 <DescSection label="Description" value={race.data.desc} />
-                {race.data.traits?.map((t) => (
+                {race.data.traits?.map(t => (
                   <DescSection key={t.name} label={t.name} value={t.desc} />
                 ))}
               </>
@@ -279,7 +282,7 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
                 <DescSection label="Hit Die" value={cls.data.hit_dice} />
                 <DescSection
                   label="Saving Throws"
-                  value={cls.data.saving_throws?.map((s) => s.name).join(', ')}
+                  value={cls.data.saving_throws?.map(s => s.name).join(', ')}
                 />
               </>
             )}
@@ -305,7 +308,7 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
               <>
                 <h2 className="text-lg font-bold mb-3">{background.data.name}</h2>
                 <DescSection label="Description" value={background.data.desc} />
-                {background.data.benefits?.map((b) => (
+                {background.data.benefits?.map(b => (
                   <DescSection key={b.name} label={b.name} value={b.desc} />
                 ))}
               </>
@@ -318,17 +321,30 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
             {spells.error && <ErrorState />}
             {spells.data && (
               <div className="space-y-4">
-                <p className="text-sm text-slate-400">{spells.data.results.length} spells</p>
-                {spells.data.results.map((spell) => (
+                <p className="text-sm text-slate-400">
+                  {spells.data.results.length}
+                  {' '}
+                  spells
+                </p>
+                {spells.data.results.map(spell => (
                   <div key={spell.key} className="border-b border-slate-800 pb-3">
                     <div className="flex items-baseline justify-between mb-1">
                       <h3 className="font-semibold text-slate-200">{spell.name}</h3>
                       <span className="text-xs text-slate-500">
-                        {spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`} · {spell.school.name}
+                        {spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`}
+                        {' '}
+                        ·
+                        {spell.school.name}
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 mb-1">
-                      {spell.casting_time} · {spell.range_text} · {spell.duration}
+                      {spell.casting_time}
+                      {' '}
+                      ·
+                      {spell.range_text}
+                      {' '}
+                      ·
+                      {spell.duration}
                       {spell.concentration ? ' · Concentration' : ''}
                     </p>
                     <p className="text-sm text-slate-400 line-clamp-3">{spell.desc}</p>
@@ -372,14 +388,14 @@ git commit -m "feat: migrate DescriptionPanel to useSWR"
 Create `components/character/OptionsPanel.test.tsx`:
 
 ```tsx
+import type { Background, Class, Race } from '@/lib/open5e'
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-
-vi.mock('swr', () => ({ default: vi.fn() }))
 import useSWR from 'swr'
 
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { OptionsPanel } from './OptionsPanel'
-import type { Race, Class, Background } from '@/lib/open5e'
+
+vi.mock('swr', () => ({ default: vi.fn() }))
 
 const mockUseSWR = vi.mocked(useSWR)
 
@@ -443,10 +459,11 @@ const [loadingSubclasses, setLoadingSubclasses] = useState(false)
 
 // Fetch subclasses when class changes
 useEffect(() => {
-  if (!draft.class) return
+  if (!draft.class)
+    return
   setLoadingSubclasses(true)
   void fetch(`/api/subclasses?class=${draft.class}`)
-    .then((r) => r.json())
+    .then(r => r.json())
     .then((data: unknown) => setSubclasses(data as typeof subclasses))
     .finally(() => setLoadingSubclasses(false))
   return () => setSubclasses([])

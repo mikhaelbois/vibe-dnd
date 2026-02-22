@@ -20,9 +20,9 @@
 Current contents of `eslint.config.mjs` (18 lines):
 
 ```js
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import nextVitals from 'eslint-config-next/core-web-vitals'
+import nextTs from 'eslint-config-next/typescript'
+import { defineConfig, globalIgnores } from 'eslint/config'
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -30,14 +30,14 @@ const eslintConfig = defineConfig([
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
+    '.next/**',
+    'out/**',
+    'build/**',
+    'next-env.d.ts',
   ]),
-]);
+])
 
-export default eslintConfig;
+export default eslintConfig
 ```
 
 **Step 2: Add the type-aware config block**
@@ -45,9 +45,9 @@ export default eslintConfig;
 Replace the file with:
 
 ```js
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import nextVitals from 'eslint-config-next/core-web-vitals'
+import nextTs from 'eslint-config-next/typescript'
+import { defineConfig, globalIgnores } from 'eslint/config'
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -55,10 +55,10 @@ const eslintConfig = defineConfig([
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
+    '.next/**',
+    'out/**',
+    'build/**',
+    'next-env.d.ts',
   ]),
   // Type-aware rules — require parserOptions.project so TypeScript's type
   // checker is available to the linter.
@@ -70,15 +70,15 @@ const eslintConfig = defineConfig([
       },
     },
     rules: {
-      "@typescript-eslint/no-floating-promises": "error",
-      "@typescript-eslint/no-misused-promises": "error",
-      "@typescript-eslint/await-thenable": "error",
-      "@typescript-eslint/consistent-type-imports": "error",
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/consistent-type-imports': 'error',
     },
   },
-]);
+])
 
-export default eslintConfig;
+export default eslintConfig
 ```
 
 **Step 3: Run lint to confirm the two expected violations appear (and no others)**
@@ -112,11 +112,11 @@ git commit -m "feat(lint): enable type-aware ESLint rules"
 `components/character/OptionsPanel.tsx` lines 55–59:
 
 ```ts
-    setLoadingSubclasses(true)
-    fetch(`/api/subclasses?class=${draft.class}`)
-      .then((r) => r.json())
-      .then((data) => setSubclasses(data))
-      .finally(() => setLoadingSubclasses(false))
+setLoadingSubclasses(true)
+fetch(`/api/subclasses?class=${draft.class}`)
+  .then(r => r.json())
+  .then(data => setSubclasses(data))
+  .finally(() => setLoadingSubclasses(false))
 ```
 
 **Step 2: Prefix the fetch chain with `void`**
@@ -124,11 +124,11 @@ git commit -m "feat(lint): enable type-aware ESLint rules"
 Change lines 56–59 to:
 
 ```ts
-    setLoadingSubclasses(true)
-    void fetch(`/api/subclasses?class=${draft.class}`)
-      .then((r) => r.json())
-      .then((data: unknown) => setSubclasses(data as typeof subclasses))
-      .finally(() => setLoadingSubclasses(false))
+setLoadingSubclasses(true)
+void fetch(`/api/subclasses?class=${draft.class}`)
+  .then(r => r.json())
+  .then((data: unknown) => setSubclasses(data as typeof subclasses))
+  .finally(() => setLoadingSubclasses(false))
 ```
 
 Note: `r.json()` returns `Promise<unknown>` so the `.then` callback parameter needs a type. Cast to the existing `subclasses` state type to keep it consistent.

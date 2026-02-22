@@ -1,4 +1,4 @@
-import { getRaces, getClasses, getBackgrounds } from '@/lib/open5e'
+import { getBackgrounds, getClasses, getRaces } from '@/lib/open5e'
 import { NewCharacterClient } from './client'
 
 export default async function NewCharacterPage() {

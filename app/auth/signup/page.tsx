@@ -1,12 +1,12 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
-import { signup } from '../actions'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import Link from 'next/link'
+import { signup } from '../actions'
 
 export default function SignupPage() {
   const [error, setError] = useState<string | null>(null)
@@ -43,7 +43,8 @@ export default function SignupPage() {
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-slate-400">
-          Already have an account?{' '}
+          Already have an account?
+          {' '}
           <Link href="/auth/login" className="text-slate-200 underline">Sign in</Link>
         </p>
       </CardContent>

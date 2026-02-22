@@ -52,9 +52,9 @@ npx shadcn@latest add button input label select tabs skeleton card sonner
 Create `vitest.config.ts`:
 
 ```typescript
-import { defineConfig } from 'vitest/config'
+import path from 'node:path'
 import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
@@ -199,7 +199,8 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
-          } catch {
+          }
+          catch {
             // Server component — cookie writes handled by middleware
           }
         },
@@ -235,8 +236,9 @@ The pattern below follows the Supabase SSR session refresh approach. Adapt the e
 `proxy.ts`:
 
 ```typescript
+import type { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -316,8 +318,8 @@ git commit -m "feat: add route protection with proxy.ts"
 `lib/open5e.test.ts`:
 
 ```typescript
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getRaces, getClasses, getSubclassesByClass, getBackgrounds, getSpellsByClass } from './open5e'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { getBackgrounds, getClasses, getRaces, getSpellsByClass, getSubclassesByClass } from './open5e'
 
 const mockFetch = vi.fn()
 global.fetch = mockFetch
@@ -387,7 +389,8 @@ async function open5eFetch<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     next: { revalidate: 86400 }, // cache for 24 hours
   })
-  if (!res.ok) throw new Error(`Open5e error: ${res.status}`)
+  if (!res.ok)
+    throw new Error(`Open5e error: ${res.status}`)
   return res.json()
 }
 
@@ -425,7 +428,7 @@ export interface Subclass {
   slug: string
   name: string
   desc: string
-  class: { slug: string; name: string }
+  class: { slug: string, name: string }
 }
 
 export interface Background {
@@ -595,8 +598,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 ```typescript
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
@@ -604,7 +607,8 @@ export async function login(formData: FormData) {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   })
-  if (error) return { error: error.message }
+  if (error)
+    return { error: error.message }
   redirect('/characters')
 }
 
@@ -614,7 +618,8 @@ export async function signup(formData: FormData) {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   })
-  if (error) return { error: error.message }
+  if (error)
+    return { error: error.message }
   redirect('/characters')
 }
 
@@ -879,8 +884,8 @@ export default function CharactersLayout({ children }: { children: React.ReactNo
 ```typescript
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
 
 export async function deleteCharacter(id: string) {
   const supabase = await createClient()
@@ -1167,13 +1172,14 @@ The OptionsPanel fetches subclasses from `/api/subclasses?class=<slug>`. Create 
 `app/api/subclasses/route.ts`:
 
 ```typescript
-import { getSubclassesByClass } from '@/lib/open5e'
 import { NextResponse } from 'next/server'
+import { getSubclassesByClass } from '@/lib/open5e'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const classSlug = searchParams.get('class')
-  if (!classSlug) return NextResponse.json([])
+  if (!classSlug)
+    return NextResponse.json([])
   const subclasses = await getSubclassesByClass(classSlug)
   return NextResponse.json(subclasses)
 }
@@ -1395,14 +1401,15 @@ git commit -m "feat: add DescriptionPanel component with tabs"
 ```typescript
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import type { CharacterDraft } from '@/lib/types'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 
 export async function saveNewCharacter(draft: CharacterDraft) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user)
+    return { error: 'Not authenticated' }
 
   const { data, error } = await supabase
     .from('characters')
@@ -1418,7 +1425,8 @@ export async function saveNewCharacter(draft: CharacterDraft) {
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error)
+    return { error: error.message }
   redirect(`/characters/${data.id}`)
 }
 ```
@@ -1534,9 +1542,9 @@ git commit -m "feat: add new character page with save action"
 ```typescript
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
 import type { CharacterDraft } from '@/lib/types'
+import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
 
 export async function updateCharacter(id: string, draft: CharacterDraft) {
   const supabase = await createClient()
@@ -1552,7 +1560,8 @@ export async function updateCharacter(id: string, draft: CharacterDraft) {
     })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error)
+    return { error: error.message }
   revalidatePath(`/characters/${id}`)
   return { success: true }
 }

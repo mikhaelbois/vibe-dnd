@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-
-vi.mock('swr', () => ({ default: vi.fn() }))
 import useSWR from 'swr'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DescriptionPanel } from './DescriptionPanel'
+
+vi.mock('swr', () => ({ default: vi.fn() }))
 
 const mockUseSWR = vi.mocked(useSWR)
 
@@ -21,7 +21,7 @@ beforeEach(() => {
   mockUseSWR.mockReturnValue({ data: undefined, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
 })
 
-describe('DescriptionPanel', () => {
+describe('descriptionPanel', () => {
   it('shows empty state when no race selected', () => {
     render(<DescriptionPanel draft={emptyDraft} />)
     expect(screen.getByText('Select a race to see details.')).toBeInTheDocument()

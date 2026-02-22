@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { OptionsPanel } from '@/components/character/OptionsPanel'
-import { DescriptionPanel } from '@/components/character/DescriptionPanel'
-import { saveNewCharacter } from './actions'
-import { toast } from 'sonner'
+import type { Background, Class, Race } from '@/lib/open5e'
 import type { CharacterDraft } from '@/lib/types'
-import type { Race, Class, Background } from '@/lib/open5e'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { DescriptionPanel } from '@/components/character/DescriptionPanel'
+import { OptionsPanel } from '@/components/character/OptionsPanel'
+import { saveNewCharacter } from './actions'
 
 interface NewCharacterClientProps {
   races: Race[]
@@ -16,7 +16,12 @@ interface NewCharacterClientProps {
 
 export function NewCharacterClient({ races, classes, backgrounds }: NewCharacterClientProps) {
   const [draft, setDraft] = useState<CharacterDraft>({
-    name: '', race: '', class: '', subclass: '', background: '', level: 1,
+    name: '',
+    race: '',
+    class: '',
+    subclass: '',
+    background: '',
+    level: 1,
   })
   const [saving, setSaving] = useState(false)
 

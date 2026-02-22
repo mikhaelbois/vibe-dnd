@@ -1,8 +1,8 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
 import type { CharacterDraft } from '@/lib/types'
+import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
 
 export async function updateCharacter(id: string, draft: CharacterDraft) {
   const supabase = await createClient()
@@ -18,7 +18,8 @@ export async function updateCharacter(id: string, draft: CharacterDraft) {
     })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error)
+    return { error: error.message }
   revalidatePath(`/characters/${id}`)
   return { success: true }
 }
