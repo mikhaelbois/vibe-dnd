@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getRaces, getClasses, getSubclassesByClass, getBackgrounds, getSpellsByClass } from './open5e'
+import { getRaces, getSubclassesByClass } from './open5e'
 
 const mockFetch = vi.fn()
 global.fetch = mockFetch
