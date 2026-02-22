@@ -160,7 +160,7 @@ export function OptionsPanel({
       <Button
         className="mt-auto"
         disabled={!draft.name || saving}
-        onClick={() => onSave(draft)}
+        onClick={() => { void onSave(draft) }}
       >
         {saving ? 'Saving…' : 'Save character'}
       </Button>
