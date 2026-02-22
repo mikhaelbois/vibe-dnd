@@ -9,8 +9,8 @@ import type { Race, Class, Background } from '@/lib/open5e'
 
 const mockUseSWR = vi.mocked(useSWR)
 
-const races: Race[] = [{ key: 'srd_elf', name: 'Elf', desc: '' }]
-const classes: Class[] = [{ key: 'srd_wizard', name: 'Wizard', desc: '', hit_dice: 'd6', saving_throws: [], subclasses: [] }]
+const races: Race[] = [{ key: 'srd_elf', name: 'Elf', desc: '', is_subspecies: false }]
+const classes: Class[] = [{ key: 'srd_wizard', name: 'Wizard', desc: '', hit_dice: 'd6' }]
 const backgrounds: Background[] = [{ key: 'srd_acolyte', name: 'Acolyte', desc: '', benefits: [] }]
 
 const defaultProps = {
