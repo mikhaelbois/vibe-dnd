@@ -4,21 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Node.js
 
-Node 24 is required (pinned in `.nvmrc`). Use `npm` directly — do not prepend `nvm use` or `source nvm` to commands.
+Node 24 is required (pinned in `.nvmrc`). Use `yarn` directly — do not prepend `nvm use` or `source nvm` to commands. Yarn 4.12.0 is managed via corepack (no local binary in `.yarn/releases/`).
 
 ## Commands
 
 ```bash
-npm run dev        # start dev server (Turbopack)
-npm run build      # production build
-npm run lint       # ESLint
-npm test           # Vitest (watch mode)
-npm run test:run   # Vitest (single run)
+yarn dev        # start dev server (Turbopack)
+yarn build      # production build
+yarn lint       # ESLint
+yarn test       # Vitest (watch mode)
+yarn test:run   # Vitest (single run)
 ```
 
 Run a single test file:
 ```bash
-npx vitest run lib/open5e.test.ts
+yarn vitest run lib/open5e.test.ts
 ```
 
 ## Architecture
