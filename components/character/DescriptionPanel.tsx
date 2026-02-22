@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import useSWR from 'swr'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Race, Class, Subclass, Background, Spell } from '@/lib/open5e'
@@ -8,25 +8,6 @@ import type { CharacterDraft } from '@/lib/types'
 
 interface DescriptionPanelProps {
   draft: CharacterDraft
-}
-
-function useOpen5eData<T>(url: string | null) {
-  const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(false)
-
-  useEffect(() => {
-    if (!url) { setData(null); return }
-    setLoading(true)
-    setError(false)
-    fetch(url)
-      .then((r) => { if (!r.ok) throw new Error(); return r.json() })
-      .then(setData)
-      .catch(() => setError(true))
-      .finally(() => setLoading(false))
-  }, [url])
-
-  return { data, loading, error }
 }
 
 function DescSection({ label, value }: { label: string; value?: string }) {
@@ -61,11 +42,11 @@ function EmptyState({ message }: { message: string }) {
 const API = 'https://api.open5e.com/v2'
 
 export function DescriptionPanel({ draft }: DescriptionPanelProps) {
-  const race = useOpen5eData<Race>(draft.race ? `${API}/species/${draft.race}/` : null)
-  const cls = useOpen5eData<Class>(draft.class ? `${API}/classes/${draft.class}/` : null)
-  const subclass = useOpen5eData<Subclass>(draft.subclass ? `${API}/classes/${draft.subclass}/` : null)
-  const background = useOpen5eData<Background>(draft.background ? `${API}/backgrounds/${draft.background}/` : null)
-  const spells = useOpen5eData<{ results: Spell[] }>(
+  const race = useSWR<Race>(draft.race ? `${API}/species/${draft.race}/` : null)
+  const cls = useSWR<Class>(draft.class ? `${API}/classes/${draft.class}/` : null)
+  const subclass = useSWR<Subclass>(draft.subclass ? `${API}/classes/${draft.subclass}/` : null)
+  const background = useSWR<Background>(draft.background ? `${API}/backgrounds/${draft.background}/` : null)
+  const spells = useSWR<{ results: Spell[] }>(
     draft.class ? `${API}/spells/?limit=200&classes__key=${draft.class}` : null
   )
 
@@ -83,7 +64,7 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
         <div className="flex-1 overflow-auto p-4">
           <TabsContent value="race">
             {!draft.race && <EmptyState message="Select a race to see details." />}
-            {race.loading && <LoadingSkeleton />}
+            {race.isLoading && <LoadingSkeleton />}
             {race.error && <ErrorState />}
             {race.data && (
               <>
@@ -98,7 +79,7 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
 
           <TabsContent value="class">
             {!draft.class && <EmptyState message="Select a class to see details." />}
-            {cls.loading && <LoadingSkeleton />}
+            {cls.isLoading && <LoadingSkeleton />}
             {cls.error && <ErrorState />}
             {cls.data && (
               <>
@@ -115,7 +96,7 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
 
           <TabsContent value="subclass">
             {!draft.subclass && <EmptyState message="Select a subclass to see details." />}
-            {subclass.loading && <LoadingSkeleton />}
+            {subclass.isLoading && <LoadingSkeleton />}
             {subclass.error && <ErrorState />}
             {subclass.data && (
               <>
@@ -127,7 +108,7 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
 
           <TabsContent value="background">
             {!draft.background && <EmptyState message="Select a background to see details." />}
-            {background.loading && <LoadingSkeleton />}
+            {background.isLoading && <LoadingSkeleton />}
             {background.error && <ErrorState />}
             {background.data && (
               <>
@@ -142,7 +123,7 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
 
           <TabsContent value="spells">
             {!draft.class && <EmptyState message="Select a class to see spells." />}
-            {spells.loading && <LoadingSkeleton />}
+            {spells.isLoading && <LoadingSkeleton />}
             {spells.error && <ErrorState />}
             {spells.data && (
               <div className="space-y-4">
