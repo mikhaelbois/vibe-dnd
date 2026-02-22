@@ -53,9 +53,9 @@ export function OptionsPanel({
       return
     }
     setLoadingSubclasses(true)
-    fetch(`/api/subclasses?class=${draft.class}`)
+    void fetch(`/api/subclasses?class=${draft.class}`)
       .then((r) => r.json())
-      .then((data) => setSubclasses(data))
+      .then((data: unknown) => setSubclasses(data as typeof subclasses))
       .finally(() => setLoadingSubclasses(false))
   }, [draft.class])
 
