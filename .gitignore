@@ -23,6 +23,9 @@
 *.pem
 .history
 
+# supabase local CLI config
+.supabase/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
