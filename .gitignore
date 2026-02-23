@@ -24,7 +24,7 @@
 .history
 
 # supabase local CLI config
-.supabase/
+/supabase/
 
 # debug
 npm-debug.log*

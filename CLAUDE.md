@@ -29,7 +29,7 @@ yarn vitest run lib/open5e.test.ts
 
 ```bash
 yarn supabase login
-yarn supabase link --project-ref <ref>
+yarn supabase link --project-ref <ref>  # creates /supabase/ (gitignored)
 ```
 
 After any schema change, regenerate with:
