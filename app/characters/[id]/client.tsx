@@ -22,7 +22,7 @@ export function CharacterClient({ character, races, classes, backgrounds }: Char
     class: character.class ?? '',
     subclass: character.subclass ?? '',
     background: character.background ?? '',
-    level: character.level,
+    level: character.level ?? 1,
   })
   const [saving, setSaving] = useState(false)
 

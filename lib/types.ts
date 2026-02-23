@@ -1,16 +1,9 @@
-export interface Character {
-  id: string
-  user_id: string
-  name: string
-  race: string | null
-  class: string | null
-  subclass: string | null
-  background: string | null
-  level: number
-  created_at: string
-}
+import type { Database } from './database.types'
 
-// Shape used in the builder form (no id/user_id)
+// Character matches the DB row exactly — derived from the generated schema.
+export type Character = Database['public']['Tables']['characters']['Row']
+
+// CharacterDraft is form state (no id/user_id, all fields non-nullable strings).
 export interface CharacterDraft {
   name: string
   race: string
