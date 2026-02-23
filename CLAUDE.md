@@ -15,11 +15,27 @@ yarn check      # TypeScript type-check (tsc --noEmit)
 yarn lint       # ESLint
 yarn test       # Vitest (watch mode)
 yarn test:run   # Vitest (single run)
+yarn gen:types  # regenerate lib/database.types.ts from live Supabase schema
 ```
 
 Run a single test file:
 ```bash
 yarn vitest run lib/open5e.test.ts
+```
+
+### Supabase type generation
+
+`lib/database.types.ts` is auto-generated — do not edit it manually. Run once to link the CLI to the remote project (project ref is in the Supabase dashboard URL):
+
+```bash
+yarn supabase login
+yarn supabase link --project-ref <ref>
+```
+
+After any schema change, regenerate with:
+
+```bash
+yarn gen:types
 ```
 
 ## Architecture
@@ -58,7 +74,9 @@ Typed fetch helpers for the Open5e v2 REST API. All calls use Next.js fetch cach
 
 ### Types
 
-`lib/types.ts` defines `Character` (DB shape) and `CharacterDraft` (builder form shape, no `id`/`user_id`).
+`lib/database.types.ts` — auto-generated Supabase schema types (do not edit; regenerate with `yarn gen:types`).
+
+`lib/types.ts` — `Character` is derived from the generated `Database` type; `CharacterDraft` is the builder form shape (all fields non-nullable strings, no `id`/`user_id`).
 
 ### UI components
 
