@@ -1,8 +1,9 @@
 'use client'
 
+import type { SWRResponse } from 'swr'
 import type { Background, Class, Race, Spell, Subclass } from '@/lib/open5e'
 import type { CharacterDraft } from '@/lib/types'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import useSWR from 'swr'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -46,16 +47,11 @@ const API = 'https://api.open5e.com/v2'
 
 interface SpellsTabContentProps {
   hasClass: boolean
-  spells: ReturnType<typeof useSWR<{ results: Spell[] }>>
-  classKey: string
+  spells: SWRResponse<{ results: Spell[] }>
 }
 
-function SpellsTabContent({ hasClass, spells, classKey }: SpellsTabContentProps) {
+function SpellsTabContent({ hasClass, spells }: SpellsTabContentProps) {
   const [spellFilter, setSpellFilter] = useState('')
-
-  useEffect(() => {
-    setSpellFilter('')
-  }, [classKey])
 
   const filteredSpells = spells.data
     ? spells.data.results.filter(s =>
@@ -193,9 +189,9 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
 
           <TabsContent value="spells" forceMount>
             <SpellsTabContent
+              key={draft.class}
               hasClass={!!draft.class}
               spells={spells}
-              classKey={draft.class}
             />
           </TabsContent>
         </div>

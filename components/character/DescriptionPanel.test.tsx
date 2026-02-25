@@ -43,22 +43,20 @@ describe('descriptionPanel', () => {
     expect(screen.queryByText('Select a race to see details.')).not.toBeInTheDocument()
   })
 
+  const spellData = {
+    results: [
+      { key: 'fireball', name: 'Fireball', level: 3, school: { name: 'Evocation' }, casting_time: '1 action', range_text: '150 feet', duration: 'Instantaneous', concentration: false, desc: 'A bright streak flashes.' },
+      { key: 'magic-missile', name: 'Magic Missile', level: 1, school: { name: 'Evocation' }, casting_time: '1 action', range_text: '120 feet', duration: 'Instantaneous', concentration: false, desc: 'You create three darts.' },
+    ],
+  }
+
   it('shows filter input and spell count when spells are loaded', () => {
-    vi.mocked(useSWR)
-      .mockReturnValueOnce({ data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
-      .mockReturnValueOnce({ data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
-      .mockReturnValueOnce({ data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
-      .mockReturnValueOnce({ data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
-      .mockReturnValueOnce({
-        data: {
-          results: [
-            { key: 'fireball', name: 'Fireball', level: 3, school: { name: 'Evocation' }, casting_time: '1 action', range_text: '150 feet', duration: 'Instantaneous', concentration: false, desc: 'A bright streak flashes.' },
-            { key: 'magic-missile', name: 'Magic Missile', level: 1, school: { name: 'Evocation' }, casting_time: '1 action', range_text: '120 feet', duration: 'Instantaneous', concentration: false, desc: 'You create three darts.' },
-          ],
-        },
-        isLoading: false,
-        error: undefined,
-      } as ReturnType<typeof useSWR>)
+    vi.mocked(useSWR).mockImplementation((key) => {
+      if (typeof key === 'string' && key.includes('/spells/')) {
+        return { data: spellData, isLoading: false, error: undefined } as ReturnType<typeof useSWR>
+      }
+      return { data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>
+    })
 
     render(<DescriptionPanel draft={{ name: 'Test', race: '', class: 'srd_wizard', subclass: '', background: '', level: 1 }} />)
     fireEvent.click(screen.getByRole('tab', { name: 'Spells' }))
@@ -70,21 +68,12 @@ describe('descriptionPanel', () => {
   })
 
   it('filters spells by name and updates count', () => {
-    vi.mocked(useSWR)
-      .mockReturnValueOnce({ data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
-      .mockReturnValueOnce({ data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
-      .mockReturnValueOnce({ data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
-      .mockReturnValueOnce({ data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
-      .mockReturnValueOnce({
-        data: {
-          results: [
-            { key: 'fireball', name: 'Fireball', level: 3, school: { name: 'Evocation' }, casting_time: '1 action', range_text: '150 feet', duration: 'Instantaneous', concentration: false, desc: 'A bright streak flashes.' },
-            { key: 'magic-missile', name: 'Magic Missile', level: 1, school: { name: 'Evocation' }, casting_time: '1 action', range_text: '120 feet', duration: 'Instantaneous', concentration: false, desc: 'You create three darts.' },
-          ],
-        },
-        isLoading: false,
-        error: undefined,
-      } as ReturnType<typeof useSWR>)
+    vi.mocked(useSWR).mockImplementation((key) => {
+      if (typeof key === 'string' && key.includes('/spells/')) {
+        return { data: spellData, isLoading: false, error: undefined } as ReturnType<typeof useSWR>
+      }
+      return { data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>
+    })
 
     render(<DescriptionPanel draft={{ name: 'Test', race: '', class: 'srd_wizard', subclass: '', background: '', level: 1 }} />)
     fireEvent.click(screen.getByRole('tab', { name: 'Spells' }))
@@ -113,13 +102,13 @@ describe('descriptionPanel', () => {
     )
     fireEvent.click(screen.getByRole('tab', { name: 'Spells' }))
 
-    const input = screen.getByPlaceholderText('Filter spells…')
-    fireEvent.change(input, { target: { value: 'fire' } })
-    expect(input).toHaveValue('fire')
+    fireEvent.change(screen.getByPlaceholderText('Filter spells…'), { target: { value: 'fire' } })
+    expect(screen.getByPlaceholderText('Filter spells…')).toHaveValue('fire')
 
     rerender(
       <DescriptionPanel draft={{ name: 'Test', race: '', class: 'srd_cleric', subclass: '', background: '', level: 1 }} />,
     )
-    expect(input).toHaveValue('')
+    // After class change, SpellsTabContent is remounted via key prop — re-query the input
+    expect(screen.getByPlaceholderText('Filter spells…')).toHaveValue('')
   })
 })
