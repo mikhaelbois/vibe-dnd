@@ -2,7 +2,9 @@
 
 import type { Background, Class, Race, Spell, Subclass } from '@/lib/open5e'
 import type { CharacterDraft } from '@/lib/types'
+import { useEffect, useState } from 'react'
 import useSWR from 'swr'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -41,6 +43,73 @@ function EmptyState({ message }: { message: string }) {
 }
 
 const API = 'https://api.open5e.com/v2'
+
+interface SpellsTabContentProps {
+  hasClass: boolean
+  spells: ReturnType<typeof useSWR<{ results: Spell[] }>>
+  classKey: string
+}
+
+function SpellsTabContent({ hasClass, spells, classKey }: SpellsTabContentProps) {
+  const [spellFilter, setSpellFilter] = useState('')
+
+  useEffect(() => {
+    setSpellFilter('')
+  }, [classKey])
+
+  const filteredSpells = spells.data
+    ? spells.data.results.filter(s =>
+        s.name.toLowerCase().includes(spellFilter.toLowerCase()),
+      )
+    : []
+
+  return (
+    <>
+      {!hasClass && <EmptyState message="Select a class to see spells." />}
+      {spells.isLoading && <LoadingSkeleton />}
+      {spells.error && <ErrorState />}
+      {spells.data && (
+        <div className="space-y-4">
+          <Input
+            placeholder="Filter spells…"
+            value={spellFilter}
+            onChange={e => setSpellFilter(e.target.value)}
+            className="bg-slate-800 border-slate-700"
+          />
+          <p className="text-sm text-slate-400">
+            {spellFilter
+              ? `${filteredSpells.length} of ${spells.data.results.length} spells`
+              : `${spells.data.results.length} spells`}
+          </p>
+          {filteredSpells.map(spell => (
+            <div key={spell.key} className="border-b border-slate-800 pb-3">
+              <div className="flex items-baseline justify-between mb-1">
+                <h3 className="font-semibold text-slate-200">{spell.name}</h3>
+                <span className="text-xs text-slate-500">
+                  {spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`}
+                  {' '}
+                  ·
+                  {spell.school.name}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mb-1">
+                {spell.casting_time}
+                {' '}
+                ·
+                {spell.range_text}
+                {' '}
+                ·
+                {spell.duration}
+                {spell.concentration ? ' · Concentration' : ''}
+              </p>
+              <p className="text-sm text-slate-400 line-clamp-3">{spell.desc}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
 
 export function DescriptionPanel({ draft }: DescriptionPanelProps) {
   const race = useSWR<Race>(draft.race ? `${API}/species/${draft.race}/` : null)
@@ -122,43 +191,12 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
             )}
           </TabsContent>
 
-          <TabsContent value="spells">
-            {!draft.class && <EmptyState message="Select a class to see spells." />}
-            {spells.isLoading && <LoadingSkeleton />}
-            {spells.error && <ErrorState />}
-            {spells.data && (
-              <div className="space-y-4">
-                <p className="text-sm text-slate-400">
-                  {spells.data.results.length}
-                  {' '}
-                  spells
-                </p>
-                {spells.data.results.map(spell => (
-                  <div key={spell.key} className="border-b border-slate-800 pb-3">
-                    <div className="flex items-baseline justify-between mb-1">
-                      <h3 className="font-semibold text-slate-200">{spell.name}</h3>
-                      <span className="text-xs text-slate-500">
-                        {spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`}
-                        {' '}
-                        ·
-                        {spell.school.name}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 mb-1">
-                      {spell.casting_time}
-                      {' '}
-                      ·
-                      {spell.range_text}
-                      {' '}
-                      ·
-                      {spell.duration}
-                      {spell.concentration ? ' · Concentration' : ''}
-                    </p>
-                    <p className="text-sm text-slate-400 line-clamp-3">{spell.desc}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+          <TabsContent value="spells" forceMount>
+            <SpellsTabContent
+              hasClass={!!draft.class}
+              spells={spells}
+              classKey={draft.class}
+            />
           </TabsContent>
         </div>
       </Tabs>
