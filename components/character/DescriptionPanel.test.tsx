@@ -1,7 +1,9 @@
+import type { CharacterDraft } from '@/lib/types'
 import { fireEvent, render, screen } from '@testing-library/react'
+import { useState } from 'react'
 import useSWR from 'swr'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DescriptionPanel } from './DescriptionPanel'
 
 vi.mock('swr', () => ({ default: vi.fn() }))
@@ -21,25 +23,31 @@ beforeEach(() => {
   mockUseSWR.mockReturnValue({ data: undefined, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
 })
 
+// Stateful wrapper that simulates router-driven tab control
+function ControlledPanel({ draft, initialTab = 'race' }: { draft: CharacterDraft, initialTab?: string }) {
+  const [activeTab, setActiveTab] = useState(initialTab)
+  return <DescriptionPanel draft={draft} activeTab={activeTab} onTabChange={setActiveTab} />
+}
+
 describe('descriptionPanel', () => {
   it('shows empty state when no race selected', () => {
-    render(<DescriptionPanel draft={emptyDraft} />)
+    render(<DescriptionPanel draft={emptyDraft} activeTab="race" onTabChange={vi.fn()} />)
     expect(screen.getByText('Select a race to see details.')).toBeInTheDocument()
   })
 
   it('calls useSWR with species URL when race is selected', () => {
-    render(<DescriptionPanel draft={{ ...emptyDraft, race: 'srd_elf' }} />)
+    render(<DescriptionPanel draft={{ ...emptyDraft, race: 'srd_elf' }} activeTab="race" onTabChange={vi.fn()} />)
     expect(mockUseSWR).toHaveBeenCalledWith('https://api.open5e.com/v2/species/srd_elf/')
   })
 
   it('calls useSWR with null when no race selected', () => {
-    render(<DescriptionPanel draft={emptyDraft} />)
+    render(<DescriptionPanel draft={emptyDraft} activeTab="race" onTabChange={vi.fn()} />)
     expect(mockUseSWR).toHaveBeenCalledWith(null)
   })
 
   it('shows loading skeleton when race data is loading', () => {
     mockUseSWR.mockReturnValue({ data: undefined, isLoading: true, error: undefined } as ReturnType<typeof useSWR>)
-    render(<DescriptionPanel draft={{ ...emptyDraft, race: 'srd_elf' }} />)
+    render(<DescriptionPanel draft={{ ...emptyDraft, race: 'srd_elf' }} activeTab="race" onTabChange={vi.fn()} />)
     expect(screen.queryByText('Select a race to see details.')).not.toBeInTheDocument()
   })
 
@@ -50,6 +58,16 @@ describe('descriptionPanel', () => {
     ],
   }
 
+  it('does not show filter input on non-spells tabs', () => {
+    render(<DescriptionPanel draft={{ ...emptyDraft, class: 'srd_wizard' }} activeTab="race" onTabChange={vi.fn()} />)
+    expect(screen.queryByPlaceholderText('Filter spells…')).not.toBeInTheDocument()
+  })
+
+  it('shows filter input on spells tab', () => {
+    render(<DescriptionPanel draft={{ ...emptyDraft, class: 'srd_wizard' }} activeTab="spells" onTabChange={vi.fn()} />)
+    expect(screen.getByPlaceholderText('Filter spells…')).toBeInTheDocument()
+  })
+
   it('shows filter input and spell count when spells are loaded', () => {
     vi.mocked(useSWR).mockImplementation((key) => {
       if (typeof key === 'string' && key.includes('/spells/')) {
@@ -58,8 +76,7 @@ describe('descriptionPanel', () => {
       return { data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>
     })
 
-    render(<DescriptionPanel draft={{ name: 'Test', race: '', class: 'srd_wizard', subclass: '', background: '', level: 1 }} />)
-    fireEvent.click(screen.getByRole('tab', { name: 'Spells' }))
+    render(<ControlledPanel draft={{ name: 'Test', race: '', class: 'srd_wizard', subclass: '', background: '', level: 1 }} initialTab="spells" />)
 
     expect(screen.getByPlaceholderText('Filter spells…')).toBeInTheDocument()
     expect(screen.getByText('2 spells')).toBeInTheDocument()
@@ -75,8 +92,7 @@ describe('descriptionPanel', () => {
       return { data: null, isLoading: false, error: undefined } as ReturnType<typeof useSWR>
     })
 
-    render(<DescriptionPanel draft={{ name: 'Test', race: '', class: 'srd_wizard', subclass: '', background: '', level: 1 }} />)
-    fireEvent.click(screen.getByRole('tab', { name: 'Spells' }))
+    render(<ControlledPanel draft={{ name: 'Test', race: '', class: 'srd_wizard', subclass: '', background: '', level: 1 }} initialTab="spells" />)
 
     fireEvent.change(screen.getByPlaceholderText('Filter spells…'), { target: { value: 'fire' } })
 
@@ -98,17 +114,16 @@ describe('descriptionPanel', () => {
       } as ReturnType<typeof useSWR>)
 
     const { rerender } = render(
-      <DescriptionPanel draft={{ name: 'Test', race: '', class: 'srd_wizard', subclass: '', background: '', level: 1 }} />,
+      <ControlledPanel draft={{ name: 'Test', race: '', class: 'srd_wizard', subclass: '', background: '', level: 1 }} initialTab="spells" />,
     )
-    fireEvent.click(screen.getByRole('tab', { name: 'Spells' }))
 
     fireEvent.change(screen.getByPlaceholderText('Filter spells…'), { target: { value: 'fire' } })
     expect(screen.getByPlaceholderText('Filter spells…')).toHaveValue('fire')
 
     rerender(
-      <DescriptionPanel draft={{ name: 'Test', race: '', class: 'srd_cleric', subclass: '', background: '', level: 1 }} />,
+      <ControlledPanel draft={{ name: 'Test', race: '', class: 'srd_cleric', subclass: '', background: '', level: 1 }} />,
     )
-    // After class change, SpellsTabContent is remounted via key prop — re-query the input
+    // After class change, useEffect resets spellFilter in DescriptionPanel
     expect(screen.getByPlaceholderText('Filter spells…')).toHaveValue('')
   })
 })
