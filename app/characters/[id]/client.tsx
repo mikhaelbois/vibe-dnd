@@ -2,6 +2,7 @@
 
 import type { Background, Class, Race } from '@/lib/open5e'
 import type { Character, CharacterDraft } from '@/lib/types'
+import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { DescriptionPanel } from '@/components/character/DescriptionPanel'
@@ -16,6 +17,15 @@ interface CharacterClientProps {
 }
 
 export function CharacterClient({ character, races, classes, backgrounds }: CharacterClientProps) {
+  const params = useParams()
+  const router = useRouter()
+  const activeTab = (params.tab as string) ?? 'race'
+  const id = params.id as string
+
+  function handleTabChange(tab: string) {
+    router.push(`/characters/${id}/${tab}`)
+  }
+
   const [draft, setDraft] = useState<CharacterDraft>({
     name: character.name,
     race: character.race ?? '',
@@ -49,7 +59,7 @@ export function CharacterClient({ character, races, classes, backgrounds }: Char
         onSave={handleSave}
         saving={saving}
       />
-      <DescriptionPanel draft={draft} />
+      <DescriptionPanel draft={draft} activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   )
 }

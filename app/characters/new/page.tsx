@@ -1,12 +1,5 @@
-import { getBackgrounds, getClasses, getRaces } from '@/lib/open5e'
-import { NewCharacterClient } from './client'
+import { redirect } from 'next/navigation'
 
-export default async function NewCharacterPage() {
-  const [races, classes, backgrounds] = await Promise.all([
-    getRaces(),
-    getClasses(),
-    getBackgrounds(),
-  ])
-
-  return <NewCharacterClient races={races} classes={classes} backgrounds={backgrounds} />
+export default function NewCharacterPage() {
+  redirect('/characters/new/race')
 }

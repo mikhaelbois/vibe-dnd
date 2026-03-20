@@ -1,113 +1,32 @@
 'use client'
 
-import type { SWRResponse } from 'swr'
 import type { Background, Class, Race, Spell, Subclass } from '@/lib/open5e'
 import type { CharacterDraft } from '@/lib/types'
 import { useState } from 'react'
 import useSWR from 'swr'
 import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { BackgroundTabContent } from './BackgroundTabContent'
+import { ClassTabContent } from './ClassTabContent'
+import { RaceTabContent } from './RaceTabContent'
+import { SpellsTabContent } from './SpellsTabContent'
+import { SubclassTabContent } from './SubclassTabContent'
+import { API } from './tab-shared'
 
 interface DescriptionPanelProps {
   draft: CharacterDraft
+  activeTab: string
+  onTabChange: (tab: string) => void
 }
 
-function DescSection({ label, value }: { label: string, value?: string }) {
-  if (!value)
-    return null
-  return (
-    <div className="mb-4">
-      <h3 className="text-sm font-semibold text-slate-300 mb-1">{label}</h3>
-      <p className="text-sm text-slate-400 whitespace-pre-line">{value}</p>
-    </div>
-  )
-}
-
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-3 p-4">
-      <Skeleton className="h-5 w-1/3 bg-slate-800" />
-      <Skeleton className="h-4 w-full bg-slate-800" />
-      <Skeleton className="h-4 w-5/6 bg-slate-800" />
-      <Skeleton className="h-4 w-4/6 bg-slate-800" />
-    </div>
-  )
-}
-
-function ErrorState() {
-  return <p className="text-sm text-slate-500 p-4">Could not load content.</p>
-}
-
-function EmptyState({ message }: { message: string }) {
-  return <p className="text-sm text-slate-500 p-4">{message}</p>
-}
-
-const API = 'https://api.open5e.com/v2'
-
-interface SpellsTabContentProps {
-  hasClass: boolean
-  spells: SWRResponse<{ results: Spell[] }>
-}
-
-function SpellsTabContent({ hasClass, spells }: SpellsTabContentProps) {
+export function DescriptionPanel({ draft, activeTab, onTabChange }: DescriptionPanelProps) {
   const [spellFilter, setSpellFilter] = useState('')
+  const [prevClass, setPrevClass] = useState(draft.class)
+  if (draft.class !== prevClass) {
+    setPrevClass(draft.class)
+    setSpellFilter('')
+  }
 
-  const filteredSpells = spells.data
-    ? spells.data.results.filter(s =>
-        s.name.toLowerCase().includes(spellFilter.toLowerCase()),
-      )
-    : []
-
-  return (
-    <>
-      {!hasClass && <EmptyState message="Select a class to see spells." />}
-      {spells.isLoading && <LoadingSkeleton />}
-      {spells.error && <ErrorState />}
-      {spells.data && (
-        <div className="space-y-4">
-          <Input
-            placeholder="Filter spells…"
-            value={spellFilter}
-            onChange={e => setSpellFilter(e.target.value)}
-            className="bg-slate-800 border-slate-700"
-          />
-          <p className="text-sm text-slate-400">
-            {spellFilter
-              ? `${filteredSpells.length} of ${spells.data.results.length} spells`
-              : `${spells.data.results.length} spells`}
-          </p>
-          {filteredSpells.map(spell => (
-            <div key={spell.key} className="border-b border-slate-800 pb-3">
-              <div className="flex items-baseline justify-between mb-1">
-                <h3 className="font-semibold text-slate-200">{spell.name}</h3>
-                <span className="text-xs text-slate-500">
-                  {spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`}
-                  {' '}
-                  ·
-                  {spell.school.name}
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mb-1">
-                {spell.casting_time}
-                {' '}
-                ·
-                {spell.range_text}
-                {' '}
-                ·
-                {spell.duration}
-                {spell.concentration ? ' · Concentration' : ''}
-              </p>
-              <p className="text-sm text-slate-400 line-clamp-3">{spell.desc}</p>
-            </div>
-          ))}
-        </div>
-      )}
-    </>
-  )
-}
-
-export function DescriptionPanel({ draft }: DescriptionPanelProps) {
   const race = useSWR<Race>(draft.race ? `${API}/species/${draft.race}/` : null)
   const cls = useSWR<Class>(draft.class ? `${API}/classes/${draft.class}/` : null)
   const subclass = useSWR<Subclass>(draft.subclass ? `${API}/classes/${draft.subclass}/` : null)
@@ -118,7 +37,7 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
 
   return (
     <div className="flex-1 overflow-auto">
-      <Tabs defaultValue="race" className="h-full flex flex-col">
+      <Tabs value={activeTab} onValueChange={onTabChange} className="h-full flex flex-col">
         <TabsList className="mx-4 mt-4 bg-slate-800">
           <TabsTrigger value="race">Race</TabsTrigger>
           <TabsTrigger value="class">Class</TabsTrigger>
@@ -127,72 +46,32 @@ export function DescriptionPanel({ draft }: DescriptionPanelProps) {
           <TabsTrigger value="spells">Spells</TabsTrigger>
         </TabsList>
 
+        {activeTab === 'spells' && (
+          <div className="px-4 pt-3">
+            <Input
+              placeholder="Filter spells…"
+              value={spellFilter}
+              onChange={e => setSpellFilter(e.target.value)}
+              className="bg-slate-800 border-slate-700"
+            />
+          </div>
+        )}
+
         <div className="flex-1 overflow-auto p-4">
           <TabsContent value="race">
-            {!draft.race && <EmptyState message="Select a race to see details." />}
-            {race.isLoading && <LoadingSkeleton />}
-            {race.error && <ErrorState />}
-            {race.data && (
-              <>
-                <h2 className="text-lg font-bold mb-3">{race.data.name}</h2>
-                <DescSection label="Description" value={race.data.desc} />
-                {race.data.traits?.map(t => (
-                  <DescSection key={t.name} label={t.name} value={t.desc} />
-                ))}
-              </>
-            )}
+            <RaceTabContent hasRace={!!draft.race} race={race} />
           </TabsContent>
-
           <TabsContent value="class">
-            {!draft.class && <EmptyState message="Select a class to see details." />}
-            {cls.isLoading && <LoadingSkeleton />}
-            {cls.error && <ErrorState />}
-            {cls.data && (
-              <>
-                <h2 className="text-lg font-bold mb-3">{cls.data.name}</h2>
-                <DescSection label="Description" value={cls.data.desc} />
-                <DescSection label="Hit Die" value={cls.data.hit_dice} />
-                <DescSection
-                  label="Saving Throws"
-                  value={cls.data.saving_throws?.map(s => s.name).join(', ')}
-                />
-              </>
-            )}
+            <ClassTabContent hasClass={!!draft.class} cls={cls} />
           </TabsContent>
-
           <TabsContent value="subclass">
-            {!draft.subclass && <EmptyState message="Select a subclass to see details." />}
-            {subclass.isLoading && <LoadingSkeleton />}
-            {subclass.error && <ErrorState />}
-            {subclass.data && (
-              <>
-                <h2 className="text-lg font-bold mb-3">{subclass.data.name}</h2>
-                <DescSection label="Description" value={subclass.data.desc} />
-              </>
-            )}
+            <SubclassTabContent hasSubclass={!!draft.subclass} subclass={subclass} />
           </TabsContent>
-
           <TabsContent value="background">
-            {!draft.background && <EmptyState message="Select a background to see details." />}
-            {background.isLoading && <LoadingSkeleton />}
-            {background.error && <ErrorState />}
-            {background.data && (
-              <>
-                <h2 className="text-lg font-bold mb-3">{background.data.name}</h2>
-                <DescSection label="Description" value={background.data.desc} />
-                {background.data.benefits?.map(b => (
-                  <DescSection key={b.name} label={b.name} value={b.desc} />
-                ))}
-              </>
-            )}
+            <BackgroundTabContent hasBackground={!!draft.background} background={background} />
           </TabsContent>
-
           <TabsContent value="spells" forceMount>
-            <SpellsTabContent
-              key={draft.class}
-              hasClass={!!draft.class}
-              spells={spells}
-            />
+            <SpellsTabContent hasClass={!!draft.class} spells={spells} spellFilter={spellFilter} />
           </TabsContent>
         </div>
       </Tabs>
