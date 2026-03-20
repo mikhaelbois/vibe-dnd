@@ -1,44 +1,37 @@
-import type { Background, Class, Race } from '@/lib/open5e'
+import type { Background, Class, Race, Subclass } from '@/lib/open5e'
 import { render, screen } from '@testing-library/react'
-import useSWR from 'swr'
-
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { OptionsPanel } from './OptionsPanel'
-
-vi.mock('swr', () => ({ default: vi.fn() }))
-
-const mockUseSWR = vi.mocked(useSWR)
 
 const races: Race[] = [{ key: 'srd_elf', name: 'Elf', desc: '', is_subspecies: false }]
 const classes: Class[] = [{ key: 'srd_wizard', name: 'Wizard', desc: '', hit_dice: 'd6' }]
 const backgrounds: Background[] = [{ key: 'srd_acolyte', name: 'Acolyte', desc: '', benefits: [] }]
+const subclasses: Subclass[] = [{ key: 'srd_evocation', name: 'Evocation', desc: '', subclass_of: { name: 'Wizard', key: 'srd_wizard', url: '' } }]
 
 const defaultProps = {
   races,
   classes,
   backgrounds,
+  subclasses: [] as Subclass[],
+  loadingSubclasses: false,
   onDraftChange: vi.fn(),
   onSave: vi.fn(),
 }
 
-beforeEach(() => {
-  mockUseSWR.mockReturnValue({ data: undefined, isLoading: false, error: undefined } as ReturnType<typeof useSWR>)
-})
-
 describe('optionsPanel', () => {
-  it('calls useSWR with null when no class is selected', () => {
+  it('shows subclass dropdown as disabled when no class is selected', () => {
     render(<OptionsPanel {...defaultProps} />)
-    expect(mockUseSWR).toHaveBeenCalledWith(null)
+    const trigger = screen.getByRole('combobox', { name: /subclass/i })
+    expect(trigger).toBeDisabled()
   })
 
-  it('calls useSWR with subclasses URL when class is selected', () => {
-    render(<OptionsPanel {...defaultProps} initialDraft={{ class: 'srd_wizard' }} />)
-    expect(mockUseSWR).toHaveBeenCalledWith('/api/subclasses?class=srd_wizard')
+  it('shows subclass options when subclasses are provided', () => {
+    render(<OptionsPanel {...defaultProps} initialDraft={{ class: 'srd_wizard' }} subclasses={subclasses} />)
+    expect(screen.getByText('Evocation')).toBeInTheDocument()
   })
 
   it('shows Loading… placeholder when subclasses are loading', () => {
-    mockUseSWR.mockReturnValue({ data: undefined, isLoading: true, error: undefined } as ReturnType<typeof useSWR>)
-    render(<OptionsPanel {...defaultProps} initialDraft={{ class: 'srd_wizard' }} />)
+    render(<OptionsPanel {...defaultProps} initialDraft={{ class: 'srd_wizard' }} loadingSubclasses={true} />)
     expect(screen.getByText('Loading…')).toBeInTheDocument()
   })
 })

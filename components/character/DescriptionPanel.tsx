@@ -1,6 +1,7 @@
 'use client'
 
-import type { Background, Class, Race, Spell, Subclass } from '@/lib/open5e'
+import type { Background, Class, Race, Subclass } from '@/lib/open5e'
+import type { Spell } from '@/lib/open5e'
 import type { CharacterDraft } from '@/lib/types'
 import { useState } from 'react'
 import useSWR from 'swr'
@@ -11,15 +12,28 @@ import { ClassTabContent } from './ClassTabContent'
 import { RaceTabContent } from './RaceTabContent'
 import { SpellsTabContent } from './SpellsTabContent'
 import { SubclassTabContent } from './SubclassTabContent'
-import { API } from './tab-shared'
 
 interface DescriptionPanelProps {
   draft: CharacterDraft
   activeTab: string
   onTabChange: (tab: string) => void
+  races: Race[]
+  classes: Class[]
+  backgrounds: Background[]
+  subclasses: Subclass[]
+  loadingSubclasses: boolean
 }
 
-export function DescriptionPanel({ draft, activeTab, onTabChange }: DescriptionPanelProps) {
+export function DescriptionPanel({
+  draft,
+  activeTab,
+  onTabChange,
+  races,
+  classes,
+  backgrounds,
+  subclasses,
+  loadingSubclasses,
+}: DescriptionPanelProps) {
   const [spellFilter, setSpellFilter] = useState('')
   const [prevClass, setPrevClass] = useState(draft.class)
   if (draft.class !== prevClass) {
@@ -27,12 +41,13 @@ export function DescriptionPanel({ draft, activeTab, onTabChange }: DescriptionP
     setSpellFilter('')
   }
 
-  const race = useSWR<Race>(draft.race ? `${API}/species/${draft.race}/` : null)
-  const cls = useSWR<Class>(draft.class ? `${API}/classes/${draft.class}/` : null)
-  const subclass = useSWR<Subclass>(draft.subclass ? `${API}/classes/${draft.subclass}/` : null)
-  const background = useSWR<Background>(draft.background ? `${API}/backgrounds/${draft.background}/` : null)
-  const spells = useSWR<{ results: Spell[] }>(
-    draft.class ? `${API}/spells/?limit=200&classes__key=${draft.class}` : null,
+  const selectedRace = races.find(r => r.key === draft.race)
+  const selectedClass = classes.find(c => c.key === draft.class)
+  const selectedSubclass = subclasses.find(s => s.key === draft.subclass)
+  const selectedBackground = backgrounds.find(b => b.key === draft.background)
+
+  const spells = useSWR<Spell[]>(
+    draft.class ? `/api/spells?class=${draft.class}` : null,
   )
 
   return (
@@ -59,16 +74,20 @@ export function DescriptionPanel({ draft, activeTab, onTabChange }: DescriptionP
 
         <div className="flex-1 overflow-auto p-4">
           <TabsContent value="race">
-            <RaceTabContent hasRace={!!draft.race} race={race} />
+            <RaceTabContent hasRace={!!draft.race} race={selectedRace} />
           </TabsContent>
           <TabsContent value="class">
-            <ClassTabContent hasClass={!!draft.class} cls={cls} />
+            <ClassTabContent hasClass={!!draft.class} cls={selectedClass} />
           </TabsContent>
           <TabsContent value="subclass">
-            <SubclassTabContent hasSubclass={!!draft.subclass} subclass={subclass} />
+            <SubclassTabContent
+              hasSubclass={!!draft.subclass}
+              subclass={selectedSubclass}
+              loadingSubclasses={loadingSubclasses}
+            />
           </TabsContent>
           <TabsContent value="background">
-            <BackgroundTabContent hasBackground={!!draft.background} background={background} />
+            <BackgroundTabContent hasBackground={!!draft.background} background={selectedBackground} />
           </TabsContent>
           <TabsContent value="spells" forceMount>
             <SpellsTabContent hasClass={!!draft.class} spells={spells} spellFilter={spellFilter} />

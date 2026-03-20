@@ -3,7 +3,6 @@
 import type { Background, Class, Race, Subclass } from '@/lib/open5e'
 import type { CharacterDraft } from '@/lib/types'
 import { useState } from 'react'
-import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,6 +18,8 @@ interface OptionsPanelProps {
   races: Race[]
   classes: Class[]
   backgrounds: Background[]
+  subclasses: Subclass[]
+  loadingSubclasses: boolean
   initialDraft?: Partial<CharacterDraft>
   onDraftChange: (draft: CharacterDraft) => void
   onSave: (draft: CharacterDraft) => Promise<void>
@@ -31,6 +32,8 @@ export function OptionsPanel({
   races,
   classes,
   backgrounds,
+  subclasses,
+  loadingSubclasses,
   initialDraft,
   onDraftChange,
   onSave,
@@ -44,9 +47,6 @@ export function OptionsPanel({
     background: initialDraft?.background ?? '',
     level: initialDraft?.level ?? 1,
   })
-  const { data: subclasses = [], isLoading: loadingSubclasses } = useSWR<Subclass[]>(
-    draft.class ? `/api/subclasses?class=${draft.class}` : null,
-  )
 
   function update(field: keyof CharacterDraft, value: string | number) {
     const next = { ...draft, [field]: value }
@@ -99,13 +99,13 @@ export function OptionsPanel({
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-slate-400 text-xs uppercase tracking-wide">Subclass</Label>
+        <Label htmlFor="subclass-select" className="text-slate-400 text-xs uppercase tracking-wide">Subclass</Label>
         <Select
           value={draft.subclass}
           onValueChange={v => update('subclass', v)}
           disabled={!draft.class || loadingSubclasses}
         >
-          <SelectTrigger className="bg-slate-800 border-slate-700">
+          <SelectTrigger id="subclass-select" className="bg-slate-800 border-slate-700">
             <SelectValue placeholder={loadingSubclasses ? 'Loading…' : 'Select subclass'} />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
@@ -114,6 +114,11 @@ export function OptionsPanel({
             ))}
           </SelectContent>
         </Select>
+        {subclasses.length > 0 && (
+          <ul className="sr-only">
+            {subclasses.map(s => <li key={s.key}>{s.name}</li>)}
+          </ul>
+        )}
       </div>
 
       <div className="space-y-1.5">
