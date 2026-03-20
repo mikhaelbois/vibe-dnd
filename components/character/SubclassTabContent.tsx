@@ -1,24 +1,23 @@
-import type { SWRResponse } from 'swr'
 import type { Subclass } from '@/lib/open5e'
-import { DescSection, EmptyState, ErrorState, LoadingSkeleton } from './tab-shared'
+import { DescSection, EmptyState, LoadingSkeleton } from './tab-shared'
 
 interface SubclassTabContentProps {
   hasSubclass: boolean
-  subclass: SWRResponse<Subclass>
+  subclass: Subclass | undefined
+  loadingSubclasses: boolean
 }
 
-export function SubclassTabContent({ hasSubclass, subclass }: SubclassTabContentProps) {
+export function SubclassTabContent({ hasSubclass, subclass, loadingSubclasses }: SubclassTabContentProps) {
+  if (loadingSubclasses)
+    return <LoadingSkeleton />
+  if (!hasSubclass)
+    return <EmptyState message="Select a subclass to see details." />
+  if (!subclass)
+    return <EmptyState message="Select a subclass to see details." />
   return (
     <>
-      {!hasSubclass && <EmptyState message="Select a subclass to see details." />}
-      {subclass.isLoading && <LoadingSkeleton />}
-      {subclass.error && <ErrorState />}
-      {subclass.data && (
-        <>
-          <h2 className="text-lg font-bold mb-3">{subclass.data.name}</h2>
-          <DescSection label="Description" value={subclass.data.desc} />
-        </>
-      )}
+      <h2 className="text-lg font-bold mb-3">{subclass.name}</h2>
+      <DescSection label="Description" value={subclass.desc} />
     </>
   )
 }

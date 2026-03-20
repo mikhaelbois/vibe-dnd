@@ -1,7 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
-export const API = 'https://api.open5e.com/v2'
-
 export function DescSection({ label, value }: { label: string, value?: string }) {
   if (!value)
     return null

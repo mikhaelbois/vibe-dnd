@@ -4,15 +4,13 @@ import { EmptyState, ErrorState, LoadingSkeleton } from './tab-shared'
 
 interface SpellsTabContentProps {
   hasClass: boolean
-  spells: SWRResponse<{ results: Spell[] }>
+  spells: SWRResponse<Spell[]>
   spellFilter: string
 }
 
 export function SpellsTabContent({ hasClass, spells, spellFilter }: SpellsTabContentProps) {
   const filteredSpells = spells.data
-    ? spells.data.results.filter(s =>
-        s.name.toLowerCase().includes(spellFilter.toLowerCase()),
-      )
+    ? spells.data.filter(s => s.name.toLowerCase().includes(spellFilter.toLowerCase()))
     : []
 
   return (
@@ -24,8 +22,8 @@ export function SpellsTabContent({ hasClass, spells, spellFilter }: SpellsTabCon
         <div className="space-y-4">
           <p className="text-sm text-slate-400">
             {spellFilter
-              ? `${filteredSpells.length} of ${spells.data.results.length} spells`
-              : `${spells.data.results.length} spells`}
+              ? `${filteredSpells.length} of ${spells.data.length} spells`
+              : `${spells.data.length} spells`}
           </p>
           {filteredSpells.map(spell => (
             <div key={spell.key} className="border-b border-slate-800 pb-3">
