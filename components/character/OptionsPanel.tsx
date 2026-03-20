@@ -115,7 +115,7 @@ export function OptionsPanel({
           </SelectContent>
         </Select>
         {subclasses.length > 0 && (
-          <ul className="sr-only">
+          <ul className="sr-only" aria-hidden="true">
             {subclasses.map(s => <li key={s.key}>{s.name}</li>)}
           </ul>
         )}
