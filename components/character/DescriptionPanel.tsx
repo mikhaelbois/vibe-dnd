@@ -1,7 +1,6 @@
 'use client'
 
-import type { Background, Class, Race, Subclass } from '@/lib/open5e'
-import type { Spell } from '@/lib/open5e'
+import type { Background, Class, Race, Spell, Subclass } from '@/lib/open5e'
 import type { CharacterDraft } from '@/lib/types'
 import { useState } from 'react'
 import useSWR from 'swr'
