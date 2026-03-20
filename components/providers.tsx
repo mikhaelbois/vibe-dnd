@@ -11,5 +11,9 @@ async function fetcher(url: string): Promise<unknown> {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <SWRConfig value={{ fetcher }}>{children}</SWRConfig>
+  return (
+    <SWRConfig value={{ fetcher, revalidateOnFocus: false, revalidateOnReconnect: false }}>
+      {children}
+    </SWRConfig>
+  )
 }
