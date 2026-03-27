@@ -1,10 +1,11 @@
 'use client'
 
-import type { Background, Class, Race } from '@/lib/open5e'
+import type { Background, Class, Race, Subclass } from '@/lib/open5e'
 import type { Character, CharacterDraft } from '@/lib/types'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import useSWR from 'swr'
 import { DescriptionPanel } from '@/components/character/DescriptionPanel'
 import { OptionsPanel } from '@/components/character/OptionsPanel'
 import { updateCharacter } from './actions'
@@ -36,6 +37,10 @@ export function CharacterClient({ character, races, classes, backgrounds }: Char
   })
   const [saving, setSaving] = useState(false)
 
+  const { data: subclasses = [], isLoading: loadingSubclasses } = useSWR<Subclass[]>(
+    draft.class ? `/api/subclasses?class=${draft.class}` : null,
+  )
+
   async function handleSave(d: CharacterDraft) {
     setSaving(true)
     const result = await updateCharacter(character.id, d)
@@ -54,12 +59,23 @@ export function CharacterClient({ character, races, classes, backgrounds }: Char
         races={races}
         classes={classes}
         backgrounds={backgrounds}
+        subclasses={subclasses}
+        loadingSubclasses={loadingSubclasses}
         initialDraft={draft}
         onDraftChange={setDraft}
         onSave={handleSave}
         saving={saving}
       />
-      <DescriptionPanel draft={draft} activeTab={activeTab} onTabChange={handleTabChange} />
+      <DescriptionPanel
+        draft={draft}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        races={races}
+        classes={classes}
+        backgrounds={backgrounds}
+        subclasses={subclasses}
+        loadingSubclasses={loadingSubclasses}
+      />
     </div>
   )
 }
