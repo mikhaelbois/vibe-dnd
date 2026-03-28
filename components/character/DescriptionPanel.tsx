@@ -46,7 +46,7 @@ export function DescriptionPanel({
   const selectedBackground = backgrounds.find(b => b.key === draft.background)
 
   const spells = useSWR<Spell[]>(
-    draft.class ? `/api/spells?class=${draft.class}` : null,
+    activeTab === 'spells' && draft.class ? `/api/spells?class=${draft.class}` : null,
   )
 
   return (
@@ -88,7 +88,7 @@ export function DescriptionPanel({
           <TabsContent value="background">
             <BackgroundTabContent hasBackground={!!draft.background} background={selectedBackground} />
           </TabsContent>
-          <TabsContent value="spells" forceMount>
+          <TabsContent value="spells">
             <SpellsTabContent hasClass={!!draft.class} spells={spells} spellFilter={spellFilter} />
           </TabsContent>
         </div>
